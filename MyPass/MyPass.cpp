@@ -2,17 +2,21 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/Analysis/LoopPass.h"
 
 using namespace llvm;
 
 namespace {
-   struct MyPass : public FunctionPass {
+   struct MyPass : public LoopPass {
       static char ID;
-      MyPass() : FunctionPass(ID) {}
+      MyPass() : LoopPass(ID) {}
 
-      bool runOnFunction(Function &Func) override {
-         for (auto& BB: Func) {
-            for (auto& Instr: BB) {
+      bool runOnLoop(Loop *L, LPPassManager &LPM) {
+         L->dump();
+         for (unsigned i = 0; i != L->getBlocks().size(); i++) {
+            auto& BB = L->getBlocks()[i];
+
+            for(auto& Instr: *BB) {
                auto instr = dyn_cast<GetElementPtrInst>(&Instr);
 
                if (instr == nullptr)
@@ -22,7 +26,6 @@ namespace {
                   if (auto resType = dyn_cast<StructType>(resPtrType->getPointerElementType())) {
                      for (auto&E : resType->elements()) {
                         if (resPtrType == E) {
-                           errs() << "Function: " << Func.getName() << "\n";
                            errs() << "Instr: ";
                            instr->dump();
 
@@ -32,9 +35,9 @@ namespace {
                      }
                   }
                }
-               errs() << "\n";
             }
          }
+         errs() << "\n";
          return false;
       }
    };
