@@ -22,7 +22,11 @@ namespace {
                if (instr == nullptr)
                   continue;
 
-               if(auto resPtrType = dyn_cast<PointerType>(instr->getResultElementType())) {
+
+               auto srcPtrType = dyn_cast<PointerType>(instr->getResultElementType());
+               auto resPtrType = dyn_cast<PointerType>(instr->getResultElementType());
+
+               if(srcPtrType && resPtrType && srcPtrType==resPtrType) {
                   if (auto resType = dyn_cast<StructType>(resPtrType->getPointerElementType())) {
                      for (auto&E : resType->elements()) {
                         if (resPtrType == E) {
